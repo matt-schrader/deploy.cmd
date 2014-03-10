@@ -6,7 +6,7 @@ import (
     "fmt"
     "net"
     "encoding/gob"
-    "github.com/SchraderMJ11/ci/model"
+    "github.com/matt-schrader/deploy.cmd/model"
 )
 
 var nextId int = 0

@@ -9,7 +9,7 @@ import (
     "net"
     "encoding/gob"
     "os/exec"
-    "github.com/SchraderMJ11/ci/model"
+    "github.com/matt-schrader/deploy.cmd/model"
 )
 
 var host string
