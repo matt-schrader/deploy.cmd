@@ -7,6 +7,7 @@ import (
     "net"
     "encoding/gob"
     "github.com/matt-schrader/deploy.cmd/model"
+    "time"
 )
 
 var nextId int = 0
@@ -65,6 +66,25 @@ func main() {
     fmt.Printf("done\n")
 }
 
+func handshakeWithClient(node model.Node, wire net.Conn, queue chan *model.Work) {
+    //encoder := gob.NewEncoder(wire)
+    inTwoSeconds := time.Now().Add(2 * time.Second)
+    fmt.Printf("Handshaking with node, must report for duty by %v\n", inTwoSeconds)
+    wire.SetReadDeadline(inTwoSeconds)
+    var tbuf [81920]byte
+    n, err := wire.Read(tbuf[0:])
+    fmt.Printf("Read bytes: %d\n", n)
+    fmt.Printf("Read: %s\n", tbuf)
+    if(err != nil) {
+        fmt.Printf("Err: %s\n", err.Error())
+        fmt.Printf("Node did not report for duty in time, terminating connection\n")
+        return
+    }
+    var zero time.Time
+    wire.SetReadDeadline(zero)
+    go handleConnection(node, wire, queue)
+}
+
 func startServer(queue chan *model.Work) {
     port := "8080"
     fmt.Printf("start server %s\n", port);
@@ -82,7 +102,8 @@ func startServer(queue chan *model.Work) {
         nextId = nextId + 1
         newNode.Id = nextId
         newNode.Busy = false
-        go handleConnection(newNode, conn, queue) // a goroutine handles conn so that the loop can accept other connections
+
+        go handshakeWithClient(newNode, conn, queue)
     }
 }
 
